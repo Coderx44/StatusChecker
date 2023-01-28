@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/Coderx44/StatusChecker/service"
 )
+
+const PORT = ":3000"
 
 type StatusChecker interface {
 	Check(ctx context.Context, name string) (status bool, err error)
@@ -53,5 +56,6 @@ func main() {
 	http.HandleFunc("/website", service.HandleWebsites)
 
 	go checkWebsites(&checkHttp)
+	log.Fatal(http.ListenAndServe(PORT, nil))
 
 }
