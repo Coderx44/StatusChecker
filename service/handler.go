@@ -57,6 +57,18 @@ func HandleGetOneWebsite(w http.ResponseWriter, r *http.Request, url string) {
 
 	website := map[string]string{}
 	website[url] = status
-
 	json.NewEncoder(w).Encode(website)
+}
+
+func HandleGetWebsites(w http.ResponseWriter, r *http.Request) {
+
+	url := r.URL.Query().Get("name")
+
+	if url == "" {
+		HandleGetAllWebsites(w, r)
+		return
+	}
+
+	HandleGetOneWebsite(w, r, url)
+
 }
