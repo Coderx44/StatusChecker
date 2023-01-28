@@ -10,8 +10,8 @@ var WebsiteList = make(map[string]string)
 func HandleWebsites(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
-	// case http.MethodGet:
-	// 	HandleGetWebsites(w, r)
+	case http.MethodGet:
+		HandleGetWebsites(w, r)
 
 	case http.MethodPost:
 		HandlePostWebsites(w, r)
