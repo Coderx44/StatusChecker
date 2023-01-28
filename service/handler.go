@@ -7,6 +7,21 @@ import (
 
 var WebsiteList = make(map[string]string)
 
+func HandleWebsites(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	// case http.MethodGet:
+	// 	HandleGetWebsites(w, r)
+
+	case http.MethodPost:
+		HandlePostWebsites(w, r)
+
+	default:
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+
+}
+
 func HandlePostWebsites(w http.ResponseWriter, r *http.Request) {
 	request := make(map[string][]string)
 
