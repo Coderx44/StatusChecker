@@ -40,3 +40,23 @@ func HandlePostWebsites(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 }
+
+func HandleGetAllWebsites(w http.ResponseWriter, r *http.Request) {
+
+	json.NewEncoder(w).Encode(WebsiteList)
+}
+
+func HandleGetOneWebsite(w http.ResponseWriter, r *http.Request, url string) {
+
+	status, ok := WebsiteList[url]
+
+	if !ok {
+		http.Error(w, "Website not found", http.StatusNotFound)
+		return
+	}
+
+	website := map[string]string{}
+	website[url] = status
+
+	json.NewEncoder(w).Encode(website)
+}
