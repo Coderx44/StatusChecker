@@ -3,9 +3,11 @@ package service
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
 )
 
 var WebsiteList = make(map[string]string)
+var mut sync.Mutex
 
 func HandleWebsites(w http.ResponseWriter, r *http.Request) {
 
@@ -22,6 +24,19 @@ func HandleWebsites(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func HandleGetWebsites(w http.ResponseWriter, r *http.Request) {
+
+	url := r.URL.Query().Get("name")
+
+	if url == "" {
+		HandleGetAllWebsites(w, r)
+		return
+	}
+
+	HandleGetOneWebsite(w, r, url)
+
+}
+
 func HandlePostWebsites(w http.ResponseWriter, r *http.Request) {
 	request := make(map[string][]string)
 
@@ -34,7 +49,9 @@ func HandlePostWebsites(w http.ResponseWriter, r *http.Request) {
 	urlList := request["websites"]
 	for _, url := range urlList {
 		if _, ok := WebsiteList[url]; !ok {
+			mut.Lock()
 			WebsiteList[url] = "Unknown"
+			mut.Unlock()
 		}
 	}
 
@@ -57,19 +74,7 @@ func HandleGetOneWebsite(w http.ResponseWriter, r *http.Request, url string) {
 	}
 
 	website := map[string]string{}
+
 	website[url] = status
 	json.NewEncoder(w).Encode(website)
-}
-
-func HandleGetWebsites(w http.ResponseWriter, r *http.Request) {
-
-	url := r.URL.Query().Get("name")
-
-	if url == "" {
-		HandleGetAllWebsites(w, r)
-		return
-	}
-
-	HandleGetOneWebsite(w, r, url)
-
 }
