@@ -4,17 +4,20 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Coderx44/StatusChecker/server"
 	"github.com/Coderx44/StatusChecker/service"
 )
 
 const PORT = ":3000"
 
 func main() {
-	checkHttp := service.HttpChecker{}
+	dependencies, err := server.InitDependencies()
+	if err != nil {
+		log.Println(err)
+	}
+	server.InitRouter(dependencies)
 
-	http.HandleFunc("/website", service.HandleWebsites)
-
-	go service.CheckWebsites(&checkHttp)
+	go service.CheckWebsites()
 	log.Fatal(http.ListenAndServe(PORT, nil))
 
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"sync"
@@ -9,35 +10,36 @@ import (
 var WebsiteList = make(map[string]string)
 var mut sync.Mutex
 
-func HandleWebsites(w http.ResponseWriter, r *http.Request) {
+func HandleWebsites(st StatusChecker) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			HandleGetWebsites(st, w, r)
 
-	switch r.Method {
-	case http.MethodGet:
-		HandleGetWebsites(w, r)
+		case http.MethodPost:
+			HandlePostWebsites(st, w, r)
 
-	case http.MethodPost:
-		HandlePostWebsites(w, r)
-
-	default:
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-	}
+		default:
+			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		}
+	})
 
 }
 
-func HandleGetWebsites(w http.ResponseWriter, r *http.Request) {
+func HandleGetWebsites(st StatusChecker, w http.ResponseWriter, r *http.Request) {
 
 	url := r.URL.Query().Get("name")
-
 	if url == "" {
-		HandleGetAllWebsites(w, r)
+		HandleGetAllWebsites(st, w, r)
 		return
 	}
 
-	HandleGetOneWebsite(w, r, url)
+	HandleGetOneWebsite(st, url, w, r)
 
 }
 
-func HandlePostWebsites(w http.ResponseWriter, r *http.Request) {
+func HandlePostWebsites(st StatusChecker, w http.ResponseWriter, r *http.Request) {
+
 	request := make(map[string][]string)
 
 	err := json.NewDecoder(r.Body).Decode(&request)
@@ -54,27 +56,30 @@ func HandlePostWebsites(w http.ResponseWriter, r *http.Request) {
 			mut.Unlock()
 		}
 	}
-
 	w.WriteHeader(http.StatusOK)
 
 }
 
-func HandleGetAllWebsites(w http.ResponseWriter, r *http.Request) {
+func HandleGetAllWebsites(st StatusChecker, w http.ResponseWriter, r *http.Request) {
 
-	json.NewEncoder(w).Encode(WebsiteList)
+	statusList := make(map[string]string)
+	for url := range WebsiteList {
+		statusList[url], _ = st.Check(context.Background(), url)
+	}
+	json.NewEncoder(w).Encode(statusList)
+
 }
 
-func HandleGetOneWebsite(w http.ResponseWriter, r *http.Request, url string) {
+func HandleGetOneWebsite(st StatusChecker, url string, w http.ResponseWriter, r *http.Request) {
 
-	status, ok := WebsiteList[url]
+	statusList := make(map[string]string)
+	status, err := st.Check(context.Background(), url)
 
-	if !ok {
-		http.Error(w, "Website not found", http.StatusNotFound)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+	statusList[url] = status
+	json.NewEncoder(w).Encode(statusList)
 
-	website := map[string]string{}
-
-	website[url] = status
-	json.NewEncoder(w).Encode(website)
 }

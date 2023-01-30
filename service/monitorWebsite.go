@@ -2,46 +2,49 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
 
 type StatusChecker interface {
-	Check(ctx context.Context, name string) (status bool, err error)
+	Check(ctx context.Context, name string) (status string, err error)
 }
 
 type HttpChecker struct {
 }
 
-func (h HttpChecker) Check(ctx context.Context, name string) (status bool, err error) {
+func NewHttpChecker() StatusChecker {
+	return &HttpChecker{}
+}
+func (h HttpChecker) Check(ctx context.Context, name string) (status string, err error) {
 
-	res, err := http.Get("http://" + name)
-	if err != nil {
-		status = false
-		return
-	}
+	status, ok := WebsiteList[name]
 
-	if res.StatusCode == http.StatusOK {
-		status = true
-	} else {
-		status = false
+	if !ok {
+		return "DOWN", fmt.Errorf("%s", "website not found")
 	}
-	return
+	return status, nil
+
 }
 
-func CheckWebsites(checkHttp *HttpChecker) {
+func CheckWebsites() {
+
 	for {
 
 		for url := range WebsiteList {
+			log.Println(WebsiteList, " url")
 			go func(url string) {
-				status, err := checkHttp.Check(context.Background(), url)
+				res, err := http.Get("http://" + url)
 				mut.Lock()
-				if err != nil || !status {
+				if err != nil || res.StatusCode != http.StatusOK {
 					WebsiteList[url] = "DOWN"
-				} else if status {
+				} else {
 					WebsiteList[url] = "UP"
 				}
 				mut.Unlock()
+
 			}(url)
 		}
 		time.Sleep(time.Minute)
@@ -50,3 +53,6 @@ func CheckWebsites(checkHttp *HttpChecker) {
 
 //maps are not goroutine favorable.
 //use syncmaps.
+
+//router -> handler -> service -> repo -> DB{mysql, mongo, etc}
+//chronjob
