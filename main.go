@@ -36,14 +36,17 @@ func (h httpChecker) Check(ctx context.Context, name string) (status bool, err e
 
 func checkWebsites(checkHttp *httpChecker) {
 	for {
-		for url := range service.WebsiteList {
-			status, err := checkHttp.Check(context.Background(), url)
 
-			if err != nil || !status {
-				service.WebsiteList[url] = "DOWN"
-			} else if status {
-				service.WebsiteList[url] = "UP"
-			}
+		for url := range service.WebsiteList {
+			go func(url string) {
+				status, err := checkHttp.Check(context.Background(), url)
+
+				if err != nil || !status {
+					service.WebsiteList[url] = "DOWN"
+				} else if status {
+					service.WebsiteList[url] = "UP"
+				}
+			}(url)
 		}
 
 		time.Sleep(time.Minute)
