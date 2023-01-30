@@ -33,7 +33,9 @@ func HandlePostWebsites(w http.ResponseWriter, r *http.Request) {
 
 	urlList := request["websites"]
 	for _, url := range urlList {
-		WebsiteList[url] = "Unknown"
+		if _, ok := WebsiteList[url]; !ok {
+			WebsiteList[url] = "Unknown"
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
