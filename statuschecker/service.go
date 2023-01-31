@@ -24,7 +24,7 @@ func (h HttpChecker) Check(ctx context.Context, name string) (status string, err
 	status, ok := WebsiteList[name]
 
 	if !ok {
-		return "DOWN", fmt.Errorf("%s", "website not found")
+		return "", fmt.Errorf("%s", "website not found")
 	}
 	return status, nil
 

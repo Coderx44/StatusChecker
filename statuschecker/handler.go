@@ -35,7 +35,7 @@ func GetWebsiteHandler(st StatusChecker, w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	HandleGetOneWebsite(st)
+	HandleGetOneWebsite(st, w, r)
 
 }
 
@@ -71,20 +71,19 @@ func HandleGetAllWebsites(st StatusChecker, w http.ResponseWriter, r *http.Reque
 
 }
 
-func HandleGetOneWebsite(st StatusChecker) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		statusList := make(map[string]string)
-		url := r.URL.Query().Get("name")
-		log.Println(url)
-		log.Println(r.Body)
-		status, err := st.Check(context.Background(), url)
+func HandleGetOneWebsite(st StatusChecker, w http.ResponseWriter, r *http.Request) {
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		statusList[url] = status
-		json.NewEncoder(w).Encode(statusList)
-	})
+	statusList := make(map[string]string)
+	url := r.URL.Query().Get("name")
+	log.Println(url)
+	log.Println(r.Body)
+	status, err := st.Check(context.Background(), url)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	statusList[url] = status
+	json.NewEncoder(w).Encode(statusList)
 
 }
