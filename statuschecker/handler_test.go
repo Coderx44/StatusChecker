@@ -1,6 +1,7 @@
 package statuschecker_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -80,4 +81,28 @@ func (suite *HandlerTestSuite) TestHandleGetOneWebsite() {
 		assert.Equal(t, res, goRes)
 
 	})
+}
+
+func (suite *HandlerTestSuite) TestaddWebsiteHandler() {
+	t := suite.T()
+	t.Run("when post is successful", func(t *testing.T) {
+		body := []byte(`{"websites":["www.google.com", "www.facebook.com"]}`)
+		r := httptest.NewRequest(http.MethodPost, "/website", bytes.NewBuffer(body))
+
+		w := httptest.NewRecorder()
+
+		statuschecker.AddWebsiteHandler(suite.service, w, r)
+		assert.Equal(t, http.StatusOK, w.Result().StatusCode)
+
+		if len(statuschecker.WebsiteList) != 2 {
+			t.Errorf("unexpected number of websites in WebsiteList: got %d, want 2", len(statuschecker.WebsiteList))
+		}
+		for k, v := range statuschecker.WebsiteList {
+			if v != "Unknown" {
+				t.Errorf("unexpected value for %s in WebsiteList: got %v, want 'Unknown'", k, v)
+			}
+		}
+
+	})
+
 }

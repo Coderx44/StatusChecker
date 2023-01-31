@@ -18,7 +18,7 @@ func HandleWebsites(st StatusChecker) http.HandlerFunc {
 			GetWebsiteHandler(st, w, r)
 
 		case http.MethodPost:
-			addWebsiteHandler(st, w, r)
+			AddWebsiteHandler(st, w, r)
 
 		default:
 			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
@@ -39,7 +39,7 @@ func GetWebsiteHandler(st StatusChecker, w http.ResponseWriter, r *http.Request)
 
 }
 
-func addWebsiteHandler(st StatusChecker, w http.ResponseWriter, r *http.Request) {
+func AddWebsiteHandler(st StatusChecker, w http.ResponseWriter, r *http.Request) {
 
 	request := make(map[string][]string)
 
