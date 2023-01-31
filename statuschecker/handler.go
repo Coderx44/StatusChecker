@@ -15,7 +15,7 @@ func HandleWebsites(st StatusChecker) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			HandleGetWebsites(st, w, r)
+			GetWebsiteHandler(st, w, r)
 
 		case http.MethodPost:
 			addWebsiteHandler(st, w, r)
@@ -27,7 +27,7 @@ func HandleWebsites(st StatusChecker) http.HandlerFunc {
 
 }
 
-func HandleGetWebsites(st StatusChecker, w http.ResponseWriter, r *http.Request) {
+func GetWebsiteHandler(st StatusChecker, w http.ResponseWriter, r *http.Request) {
 
 	url := r.URL.Query().Get("name")
 	if url == "" {
