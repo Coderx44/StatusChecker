@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Coderx44/StatusChecker/server"
-	"github.com/Coderx44/StatusChecker/service"
+	"github.com/Coderx44/StatusChecker/statuschecker"
 )
 
 const PORT = ":3000"
@@ -17,7 +17,7 @@ func main() {
 	}
 	server.InitRouter(dependencies)
 
-	go service.CheckWebsites()
+	go statuschecker.CheckWebsites()
 	log.Fatal(http.ListenAndServe(PORT, nil))
 
 }

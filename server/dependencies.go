@@ -1,13 +1,15 @@
 package server
 
-import "github.com/Coderx44/StatusChecker/service"
+import (
+	"github.com/Coderx44/StatusChecker/statuschecker"
+)
 
 type dependencies struct {
-	httpchecker service.StatusChecker
+	httpchecker statuschecker.StatusChecker
 }
 
 func InitDependencies() (dependencies, error) {
-	statuschecker := service.NewHttpChecker()
+	statuschecker := statuschecker.NewHttpChecker()
 
 	return dependencies{
 		httpchecker: statuschecker,

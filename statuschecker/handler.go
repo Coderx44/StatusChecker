@@ -1,8 +1,9 @@
-package service
+package statuschecker
 
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"sync"
 )
@@ -17,7 +18,7 @@ func HandleWebsites(st StatusChecker) http.HandlerFunc {
 			HandleGetWebsites(st, w, r)
 
 		case http.MethodPost:
-			HandlePostWebsites(st, w, r)
+			addWebsiteHandler(st, w, r)
 
 		default:
 			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
@@ -34,11 +35,11 @@ func HandleGetWebsites(st StatusChecker, w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	HandleGetOneWebsite(st, url, w, r)
+	HandleGetOneWebsite(st)
 
 }
 
-func HandlePostWebsites(st StatusChecker, w http.ResponseWriter, r *http.Request) {
+func addWebsiteHandler(st StatusChecker, w http.ResponseWriter, r *http.Request) {
 
 	request := make(map[string][]string)
 
@@ -70,16 +71,20 @@ func HandleGetAllWebsites(st StatusChecker, w http.ResponseWriter, r *http.Reque
 
 }
 
-func HandleGetOneWebsite(st StatusChecker, url string, w http.ResponseWriter, r *http.Request) {
+func HandleGetOneWebsite(st StatusChecker) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		statusList := make(map[string]string)
+		url := r.URL.Query().Get("name")
+		log.Println(url)
+		log.Println(r.Body)
+		status, err := st.Check(context.Background(), url)
 
-	statusList := make(map[string]string)
-	status, err := st.Check(context.Background(), url)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-	statusList[url] = status
-	json.NewEncoder(w).Encode(statusList)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		statusList[url] = status
+		json.NewEncoder(w).Encode(statusList)
+	})
 
 }

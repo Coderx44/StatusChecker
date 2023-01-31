@@ -3,10 +3,10 @@ package server
 import (
 	"net/http"
 
-	"github.com/Coderx44/StatusChecker/service"
+	"github.com/Coderx44/StatusChecker/statuschecker"
 )
 
 func InitRouter(dep dependencies) {
-	http.HandleFunc("/website", service.HandleWebsites(dep.httpchecker))
+	http.HandleFunc("/website", statuschecker.HandleWebsites(dep.httpchecker))
 
 }

@@ -1,4 +1,4 @@
-package service
+package statuschecker
 
 import (
 	"context"
@@ -18,6 +18,7 @@ type HttpChecker struct {
 func NewHttpChecker() StatusChecker {
 	return &HttpChecker{}
 }
+
 func (h HttpChecker) Check(ctx context.Context, name string) (status string, err error) {
 
 	status, ok := WebsiteList[name]
