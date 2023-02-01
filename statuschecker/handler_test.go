@@ -200,14 +200,12 @@ func (suite *HandlerTestSuite) TestHandleWebsites() {
 	})
 
 	t.Run("when a successful post request is made", func(t *testing.T) {
-		// body := []byte(`{"websites":["www.google.com", "www.facebook.com"]}`)
 		body := []byte(`{"websites":["www.test1.com", "www.test2.com"]}`)
 
 		r := httptest.NewRequest(http.MethodPost, "/website", bytes.NewBuffer(body))
 		w := httptest.NewRecorder()
 
 		router := http.NewServeMux()
-		// suite.service.On("Check", mock.Anything, "google.com").Return("UP", nil)
 
 		router.HandleFunc("/website", statuschecker.HandleWebsites(suite.service))
 
@@ -236,12 +234,31 @@ func (suite *HandlerTestSuite) TestHandleWebsites() {
 		router.ServeHTTP(w, r)
 		resp := make(map[string]string)
 		json.NewDecoder(w.Body).Decode(&resp)
-		log.Println(resp)
+		// log.Println(resp)
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.Equal(t, expectedRes, resp)
 	})
 
-	t.Run("when a INvalid request is made", func(t *testing.T) {
+	t.Run("when an invalid get request is sent with one parameter", func(t *testing.T) {
+		queryParams := url.Values{}
+		queryParams.Add("name", "www.test.com")
+		inputUrl := fmt.Sprintf("/website?%s", queryParams.Encode())
+		expectedRes := ""
+		r := httptest.NewRequest(http.MethodGet, inputUrl, nil)
+		w := httptest.NewRecorder()
+
+		router := http.NewServeMux()
+		suite.service.On("Check", mock.Anything, "www.test.com").Return("", errors.New("website not found"))
+
+		router.HandleFunc("/website", statuschecker.HandleWebsites(suite.service))
+		var resp string
+		json.NewDecoder(w.Body).Decode(&resp)
+		router.ServeHTTP(w, r)
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.Equal(t, expectedRes, resp)
+	})
+
+	t.Run("when a Invalid request is made", func(t *testing.T) {
 		body := []byte(`{"websites":["www.test1.com", "www.test2.com"]}`)
 
 		r := httptest.NewRequest(http.MethodPut, "/website", bytes.NewBuffer(body))
