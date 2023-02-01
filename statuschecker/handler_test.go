@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/Coderx44/StatusChecker/mocks"
@@ -105,4 +106,79 @@ func (suite *HandlerTestSuite) TestaddWebsiteHandler() {
 
 	})
 
+	t.Run("when post is not valid", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodPost, "/website", strings.NewReader(""))
+
+		w := httptest.NewRecorder()
+
+		statuschecker.AddWebsiteHandler(suite.service, w, r)
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+
+	})
+
+}
+
+func (suite *HandlerTestSuite) TestHandleWebsites() {
+
+	t := suite.T()
+
+	t.Run("when get all website is called successfully", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/website", nil)
+		w := httptest.NewRecorder()
+
+		inputUrl := "www.google.com"
+		statuschecker.WebsiteList[inputUrl] = "Unknown"
+		res := "Unknown"
+		expctedRes := map[string]string{
+			"www.google.com": "Unknown",
+		}
+
+		// suite.service.On("GetWebsiteHandler", suite.service, w, r).Return()
+		suite.service.On("Check", mock.Anything, inputUrl).Return(res, nil)
+
+		statuschecker.HandleWebsites(suite.service)(w, r)
+		gotRes := make(map[string]string)
+		json.NewDecoder(w.Body).Decode(&gotRes)
+
+		assert.Equal(t, expctedRes, gotRes)
+
+	})
+
+	// t.Run("when get one website is called successfully", func(t *testing.T) {
+	// 	inputUrl := "www.twitter.com"
+	// 	queryParams := url.Values{}
+	// 	queryParams.Add("name", inputUrl)
+	// 	getOneurl := fmt.Sprintf("/website?%s", queryParams.Encode())
+	// 	r := httptest.NewRequest(http.MethodGet, getOneurl, nil)
+	// 	w := httptest.NewRecorder()
+
+	// 	statuschecker.WebsiteList[inputUrl] = "Unknown"
+	// 	res := "Unknown"
+	// 	expctedRes := map[string]string{
+	// 		"www.twitter.com": "Unknown",
+	// 	}
+
+	// 	// suite.service.On("GetWebsiteHandler", suite.service, w, r).Return()
+	// 	suite.service.On("Check", mock.Anything, inputUrl).Return(res, nil)
+
+	// 	statuschecker.HandleWebsites(suite.service)(w, r)
+	// 	gotRes := make(map[string]string)
+	// 	json.NewDecoder(w.Body).Decode(&gotRes)
+
+	// 	assert.Equal(t, expctedRes, gotRes)
+
+	// })
+
+	t.Run("when an invalid request is sent", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/websites", nil)
+		w := httptest.NewRecorder()
+
+		router := http.NewServeMux()
+
+		router.HandleFunc("/website", statuschecker.HandleWebsites(suite.service))
+
+		router.ServeHTTP(w, r)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
 }

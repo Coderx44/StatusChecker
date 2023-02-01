@@ -3,7 +3,6 @@ package statuschecker
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"sync"
 )
@@ -75,8 +74,8 @@ func HandleGetOneWebsite(st StatusChecker, w http.ResponseWriter, r *http.Reques
 
 	statusList := make(map[string]string)
 	url := r.URL.Query().Get("name")
-	log.Println(url)
-	log.Println(r.Body)
+	// log.Println(url)
+	// log.Println(r.Body)
 	status, err := st.Check(context.Background(), url)
 
 	if err != nil {
