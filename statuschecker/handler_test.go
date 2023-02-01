@@ -241,14 +241,14 @@ func (suite *HandlerTestSuite) TestHandleWebsites() {
 
 	t.Run("when an invalid get request is sent with one parameter", func(t *testing.T) {
 		queryParams := url.Values{}
-		queryParams.Add("name", "www.test.com")
+		queryParams.Add("name", "www.test1.com")
 		inputUrl := fmt.Sprintf("/website?%s", queryParams.Encode())
 		expectedRes := ""
 		r := httptest.NewRequest(http.MethodGet, inputUrl, nil)
 		w := httptest.NewRecorder()
 
 		router := http.NewServeMux()
-		suite.service.On("Check", mock.Anything, "www.test.com").Return("", errors.New("website not found"))
+		suite.service.On("Check", mock.Anything, "www.test1.com").Return("", errors.New("website not found"))
 
 		router.HandleFunc("/website", statuschecker.HandleWebsites(suite.service))
 		var resp string
