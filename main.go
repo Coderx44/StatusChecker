@@ -1,16 +1,23 @@
 package main
 
-import "context"
+import (
+	"log"
+	"net/http"
 
-type StatusChecker interface {
-	Check(ctx context.Context, name string) (status bool, err error)
-}
+	"github.com/Coderx44/StatusChecker/server"
+	"github.com/Coderx44/StatusChecker/statuschecker"
+)
 
-type httpChecker struct {
-}
+const PORT = ":3000"
 
 func main() {
-	checkHttp := httpChecker{}
-	_ = checkHttp
+	dependencies, err := server.InitDependencies()
+	if err != nil {
+		log.Println(err)
+	}
+	server.InitRouter(dependencies)
+
+	go statuschecker.CheckWebsites()
+	log.Fatal(http.ListenAndServe(PORT, nil))
 
 }
